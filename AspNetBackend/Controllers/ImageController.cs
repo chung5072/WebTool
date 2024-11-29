@@ -64,15 +64,15 @@ namespace AspNetBackend.Controllers
                 }
 
                 // 2. FastAPI 비교 처리
-                //var comparisonResult = await _imageService.SendToFastApiForComparisonAsync(imageResult.PrevImageName, imageResult.AfterImageName);
-                //if (!comparisonResult.IsSuccess)
-                //{
-                //    return BadRequest("Failed to compare images");
-                //}
+                var comparisonResult = await _imageService.SendToFastApiForComparisonAsync(imageResult.PrevImageName, imageResult.AfterImageName);
+                if (!comparisonResult.IsSuccess)
+                {
+                    return BadRequest("Failed to compare images");
+                }
 
                 return Ok(new
                 {
-                    //ComparisonResult = comparisonResult.Result,
+                    ComparisonResult = comparisonResult.Result,
                     PrevImageUrl = $"/uploads/images/{imageResult.PrevImageName}",
                     AfterImageUrl = $"/uploads/images/{imageResult.AfterImageName}"
                 });
