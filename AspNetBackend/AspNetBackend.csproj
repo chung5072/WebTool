@@ -163,14 +163,14 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\ImageController.cs" />
+    <Compile Include="Controllers\DocumentController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\Dtos\ComparisonResult.cs" />
-    <Compile Include="Models\Dtos\ImageSaveResult.cs" />
-    <Compile Include="Models\Services\IImageService.cs" />
-    <Compile Include="Models\Services\ImageService.cs" />
+    <Compile Include="Models\Dtos\PdfDocAnalysisResult.cs" />
+    <Compile Include="Models\Dtos\PdfDocSaveResult.cs" />
+    <Compile Include="Models\Services\DocumentService.cs" />
+    <Compile Include="Models\Services\IDocumentService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

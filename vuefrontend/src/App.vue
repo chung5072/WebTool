@@ -1,6 +1,6 @@
 <script setup>
   import HelloWorld from './components/HelloWorld.vue'
-  import UploadImages from './components/UploadImages.vue'
+  import UploadDocuments from './components/UploadDocuments.vue'
 </script>
 
 <template>
@@ -13,7 +13,7 @@
   </header>
 
   <main>
-    <UploadImages />
+    <UploadDocuments />
   </main>
 </template>
 

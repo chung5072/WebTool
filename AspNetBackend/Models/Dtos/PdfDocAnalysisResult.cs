@@ -1,8 +1,8 @@
 ﻿namespace AspNetBackend.Models.Dtos
 {
-    public class ComparisonResult
+    public class PdfDocAnalysisResult
     {
         public bool IsSuccess { get; set; }
-        public string Result { get; set; }
+        public string ResultDocName { get; set; }
     }
 }

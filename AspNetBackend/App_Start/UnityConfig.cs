@@ -15,7 +15,7 @@ namespace AspNetBackend
             // it is NOT necessary to register your controllers
 
             // e.g. container.RegisterType<ITestService, TestService>();
-            container.RegisterType<IImageService, ImageService>();
+            container.RegisterType<IDocumentService, DocumentService>();
 
             GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);
         }
