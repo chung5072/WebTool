@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{87A5DAC4-D14B-4105-AD83-7F8A289D9973}</ProjectGuid>
+    <ProjectGuid>{F24478D0-35D6-4DCD-98C1-44C05D98B244}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>UnitTestAboutDocument</RootNamespace>
@@ -95,7 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AspNetBackend\AspNetBackend.csproj">
-      <Project>{1cccb1e8-0665-4fc3-bbb7-131bdbd22f48}</Project>
+      <Project>{1CCCB1E8-0665-4FC3-BBB7-131BDBD22F48}</Project>
       <Name>AspNetBackend</Name>
     </ProjectReference>
   </ItemGroup>

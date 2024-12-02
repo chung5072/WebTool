@@ -10,10 +10,12 @@ namespace AspNetBackend.Controllers
     public class DocumentController : ApiController
     {
         private readonly IDocumentService _documentService;
+        private readonly HttpContextBase _context;
 
-        public DocumentController(IDocumentService documentService)
+        public DocumentController(IDocumentService documentService, HttpContextBase context)
         {
             _documentService = documentService;
+            _context = context;
         }
 
         /// <summary>
@@ -28,9 +30,7 @@ namespace AspNetBackend.Controllers
             {
                 //System.Diagnostics.Debug.WriteLine("UploadPdfDoc 메서드 실행");
 
-                // HttpRequestBase로 변환
-                var requestBase = new HttpRequestWrapper(HttpContext.Current.Request);
-
+                var requestBase = _context.Request;
                 // HttpPostedFileBase로 변환
                 var publicKeyPem = requestBase.Form["publicKeyPem"];
                 var pdfDoc = requestBase.Files["pdfDoc"];
