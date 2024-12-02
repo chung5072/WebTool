@@ -14,12 +14,6 @@ namespace AspNetBackend
             UnityConfig.RegisterComponents();
             GlobalConfiguration.Configure(WebApiConfig.Register); // WebApiConfig.Register 메서드가 호출
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
-
-
-            // JSON 직렬화 설정 추가
-            var jsonSettings = GlobalConfiguration.Configuration.Formatters.JsonFormatter.SerializerSettings;
-            jsonSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            jsonSettings.Formatting = Formatting.Indented;
         }
     }
 }

@@ -7,6 +7,6 @@ namespace AspNetBackend.Models.Services
     public interface IDocumentService
     {
         Task<PdfDocSaveResult> SaveUploadedPdfDocAsync(HttpPostedFileBase pdfDoc);
-        Task<PdfDocAnalysisResult> AnalyzePdfDocAsync(string publicKeyPem, string pdfDocName);
+        Task<PdfDocSummarizedResult> SummarizePdfDocAsync(string publicKeyPem, string pdfDocName);
     }
 }

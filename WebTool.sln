@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetBackend", "AspNetBack
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "vuefrontend", "VueFrontend\vuefrontend.esproj", "{5EBBCFF1-73AE-4659-A281-8C1B57F252A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestAboutDocument", "UnitTestAboutDocument\UnitTestAboutDocument.csproj", "{87A5DAC4-D14B-4105-AD83-7F8A289D9973}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,10 +23,6 @@ Global
 		{5EBBCFF1-73AE-4659-A281-8C1B57F252A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5EBBCFF1-73AE-4659-A281-8C1B57F252A9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5EBBCFF1-73AE-4659-A281-8C1B57F252A9}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{87A5DAC4-D14B-4105-AD83-7F8A289D9973}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{87A5DAC4-D14B-4105-AD83-7F8A289D9973}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{87A5DAC4-D14B-4105-AD83-7F8A289D9973}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{87A5DAC4-D14B-4105-AD83-7F8A289D9973}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

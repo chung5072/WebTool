@@ -10,14 +10,6 @@
 		// 비밀키 저장
 		const privateKeyPem = ref(null);
 
-		// Vue.js가 마운트될 때 공개키를 생성하고 서버로 전송
-		onMounted(() => {
-				// 공개키 생성
-				const keypair = forge.pki.rsa.generateKeyPair(2048);
-				publicKeyPem.value = forge.pki.publicKeyToPem(keypair.publicKey);
-				privateKeyPem.value = forge.pki.privateKeyToPem(keypair.privateKey);
-		});
-
 		const documentModel = reactive({
 				pdfDoc: {
 						file: null,
@@ -30,6 +22,14 @@
 				hasAnalysisResult: false,
 		});
 
+		// Vue.js가 마운트될 때 공개키를 생성하고 서버로 전송
+		onMounted(() => {
+				// 공개키 및 비밀키 생성
+				const keypair = forge.pki.rsa.generateKeyPair(2048);
+				publicKeyPem.value = forge.pki.publicKeyToPem(keypair.publicKey);
+				privateKeyPem.value = forge.pki.privateKeyToPem(keypair.privateKey);
+		});
+
 		// ViewModel: 모델과 뷰 사이의 로직을 처리
 		async function handleFileUpload(files) {
 				const file = files[0];
@@ -37,37 +37,50 @@
 		}
 
 		// FastAPI에서 반환한 파일 경로를 사용
-	function fetchAnalysisResult(filePath) {
+		function fetchAnalysisResult(filePath, decryptionKey, encryptionInitialState, authTag) {
 				// 분석 결과가 저장된 정적 파일을 요청
 				axios.get(`http://localhost:8000/static/${filePath}`)
 					.then(res => {
-							console.log("암호화된 초기 res: ", res);
+							//console.log("static 파일 연 초기 res: ", res);
 							// Base64로 인코딩된 데이터를 디코딩 (JavaScript 내장 함수 사용)
-						const base64DecodedData = atob(res.data);
-						console.log("base64 디코드 data: ", base64DecodedData);
-            // 디코딩된 문자열을 Uint8Array로 변환
-            const encryptedData = new Uint8Array(base64DecodedData.split('').map(char => char.charCodeAt(0)));
-            console.log("Uint8Array로 변환 data: ", encryptedData);
-            // 비밀키 로드
-            const privateKey = forge.pki.privateKeyFromPem(privateKeyPem.value);
-            try {
-              // RSA-OAEP를 사용하여 복호화
-              const decryptedData = privateKey.decrypt(encryptedData, 'RSA-OAEP', {
-                md: forge.md.sha256.create(),
-                mgf1: {
-                  md: forge.md.sha256.create()
-                }
-              });
+							const encodedData = atob(res.data);
+							const encodedDecryptionKey = atob(decryptionKey);
+							const encodedInitialState = atob(encryptionInitialState);
+							const encodedTag = atob(authTag);
 
-              documentModel.result.resDoc = forge.util.decodeUtf8(decryptedData);
-              documentModel.hasAnalysisResult = true;
-            } catch (error) {
-              console.error("복호화 중 오류 발생: ", error);
-            }
+							// Uint8Array로 변환
+							const decodedDataArray = new Uint8Array(encodedData.split('').map(char => char.charCodeAt(0)));
+							const decodedDecryptionKeyArray = new Uint8Array(encodedDecryptionKey.split('').map(char => char.charCodeAt(0)));
+							const decodedInitialStateArray = new Uint8Array(encodedInitialState.split('').map(char => char.charCodeAt(0)));
+							const decodedTagArray = new Uint8Array(encodedTag.split('').map(char => char.charCodeAt(0)));
+
+							// 비밀키 로드
+							const privateKey = forge.pki.privateKeyFromPem(privateKeyPem.value);
+							try {
+									// RSA-OAEP를 사용하여 대칭키 복호화
+									const aesKey = privateKey.decrypt(decodedDecryptionKeyArray, 'RSA-OAEP', {
+											md: forge.md.sha256.create(),
+											mgf1: {
+													md: forge.md.sha256.create()
+											}
+									});
+
+									// 대칭키를 사용하여 데이터 복호화
+									const decipher = forge.cipher.createDecipher('AES-GCM', aesKey);
+									// 초기화 벡터 및 인증 태그
+									decipher.start({ iv: decodedInitialStateArray, tag: decodedTagArray });
+									decipher.update(forge.util.createBuffer(decodedDataArray));
+									decipher.finish();
+
+									documentModel.result.resDoc = forge.util.decodeUtf8(decipher.output.getBytes());
+									documentModel.hasAnalysisResult = true;
+							} catch (error) {
+									console.error("복호화 중 오류 발생: ", error);
+							}
 					})
-          .catch(e => {
-							console.error(`ERROR ${e.response ? e.response.status : 'unknown'} : ${e.request ? e.request.responseURL : 'unknown'}`);
-          });
+					.catch(e => {
+							console.error(`파일 요청 에러 ${e.response ? e.response.status : 'unknown'} : ${e.request ? e.request.responseURL : 'unknown'}`);
+					});
 		}
 
 		function goToAnalysisPage() {
@@ -82,15 +95,15 @@
 								'Content-Type': 'multipart/form-data',
 						},
 				})
-						.then((response) => {
-								console.log(response);
-							documentModel.result.reqDoc = response.data.pdfDocName;
-							// 분석 결과 파일 경로를 받아서 fetchAnalysisResult 호출
-							console.log("파일 이름: ", response.data.resultDocName);
-              fetchAnalysisResult(response.data.resultDocName);
+					.then((response) => {
+								//console.log("업로드 요청: ", response)
+								documentModel.result.reqDoc = response.data.ResultDocName;
+								// 분석 결과 파일 경로를 받아서 fetchAnalysisResult 호출
+								//console.log("파일 이름: ", response.data.ResultDocName);
+								fetchAnalysisResult(response.data.ResultDocName, response.data.DecryptionKey, response.data.EncryptionInitialState, response.data.AuthTag);
 						})
 						.catch((error) => {
-								console.error('Error uploading PDF:', error);
+								console.error('PDF 파일 업로딩 중 에러:', error);
 						});
 		}
 </script>
@@ -110,7 +123,7 @@
 				<div v-if="documentModel.hasAnalysisResult">
 						<p>Analysis Page</p>
 						<p>{{ documentModel.result.reqDoc }}</p>
-						<pre>{{ documentModel.result.resDoc }}</pre> <!-- Use <pre> for preformatted text -->
+						<p>{{ documentModel.result.resDoc }}</p> <!-- Use <pre> for preformatted text -->
 				</div>
 		</div>
 </template>

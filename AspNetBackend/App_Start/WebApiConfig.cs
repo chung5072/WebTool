@@ -8,7 +8,7 @@ namespace AspNetBackend.App_Start
         public static void Register(HttpConfiguration config)
         {
             //// CORS 설정 추가
-            var cors = new EnableCorsAttribute("http://localhost:50142", "*", "*");
+            var cors = new EnableCorsAttribute("http://localhost:50142, http://localhost:8000", "*", "*");
 
             config.EnableCors(cors);
 
