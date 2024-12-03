@@ -50,7 +50,7 @@ namespace AspNetBackend.Controllers
                 }
                 //System.Diagnostics.Debug.WriteLine("저장된 PDF 파일 이름: " + pdfDocSaveResult.PdfDocName);
 
-                // 2. AI를 활용한 분석 처리
+                // 2. AI를 활용한 분석 처리 
                 var pdfDocAnalysisResult = await _documentService.SummarizePdfDocAsync(publicKeyPem, pdfDocSaveResult.PdfDocName);
                 if (!pdfDocAnalysisResult.IsSuccess)
                 {

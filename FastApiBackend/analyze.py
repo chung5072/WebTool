@@ -3,6 +3,8 @@ from langchain_community.document_loaders import PyPDFLoader
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import nltk
 
+import tempfile
+
 # 환경 변수 설정 및 로드
 load_dotenv()
 
@@ -14,9 +16,19 @@ MODEL_NAME = 'eenzeenee/t5-base-korean-summarization'
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
 
-def summary_pdf(doc_path: str):
+# 로컬 저장소
+# def summary_pdf(doc_path: str):
+# 클라우드 저장소
+def summary_pdf(pdf_bytes: bytes):
+     # 임시 파일 생성
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+        temp_file.write(pdf_bytes)
+        temp_file_path = temp_file.name
     # PDF 파일 로드
-    loader = PyPDFLoader(doc_path)
+    # 로컬 저장소
+    # loader = PyPDFLoader(doc_path)
+    # 클라우드 저장소
+    loader = PyPDFLoader(temp_file_path)
     document = loader.load()
 
     # 모든 페이지의 내용을 하나의 문자열로 결합
@@ -36,7 +48,7 @@ def summary_pdf(doc_path: str):
         result = nltk.sent_tokenize(decoded_output.strip())[0]
         summaries.append(result)
 
-    # 요약본을 통합합니다.
+    # 요약본 통합
     final_summary = " ".join(summaries)
 
     # 최종 요약 결과 출력
@@ -50,4 +62,5 @@ def split_text(text, chunk_size, overlap):
         yield text[start:end]
         start += chunk_size - overlap
 
+# 메서드 테스트
 # print(analyze_pdf('data/test.pdf'))

@@ -1,5 +1,7 @@
 ﻿using System.Web.Http;
 using System.Web.Http.Cors;
+using System.Configuration;
+using System;
 
 namespace AspNetBackend.App_Start
 {
@@ -7,8 +9,10 @@ namespace AspNetBackend.App_Start
     {
         public static void Register(HttpConfiguration config)
         {
-            //// CORS 설정 추가
-            var cors = new EnableCorsAttribute("http://localhost:50142, http://localhost:8000", "*", "*");
+            // CORS 설정 추가
+            string urls = ConfigurationManager.AppSettings["AllowedUrls"];
+            var allowedOrigins = urls.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var cors = new EnableCorsAttribute(string.Join(",", allowedOrigins), "*", "*");
 
             config.EnableCors(cors);
 

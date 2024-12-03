@@ -4,6 +4,8 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
+using Azure.Storage.Blobs;
+using System.Configuration;
 
 namespace AspNetBackend.Models.Services
 {
@@ -24,29 +26,58 @@ namespace AspNetBackend.Models.Services
         {
             try
             {
+                // 로컬 저장소
                 // 파일 저장
-                string pdfDocName = Path.GetFileName(pdfDoc.FileName);
-                // 저장 경로 설정
-                string docDirectoryPath = _context.Server.MapPath("~/uploads/docs");
+                //string pdfDocName = Path.GetFileName(pdfDoc.FileName);
+                //// 저장 경로 설정
+                //string docDirectoryPath = _context.Server.MapPath("~/uploads/docs");
 
-                if (!Directory.Exists(docDirectoryPath))
+                //if (!Directory.Exists(docDirectoryPath))
+                //{
+                //    Directory.CreateDirectory(docDirectoryPath);
+                //}
+
+                //string pdfDocPath = Path.Combine(docDirectoryPath, pdfDocName);
+                ////System.Diagnostics.Debug.WriteLine("파일 저장 경로: " + pdfDocPath);
+
+                //// 비동기적으로 파일 저장
+                //using (var fileStream = new FileStream(pdfDocPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
+                //{
+                //    await pdfDoc.InputStream.CopyToAsync(fileStream);
+                //}
+
+                //return new PdfDocSaveResult
+                //{
+                //    IsSuccess = true,
+                //    PdfDocName = pdfDocName,
+                //};
+
+                // 클라우드 저장소
+                string connectionString = ConfigurationManager.AppSettings["AzureConnectionString"];
+                string containerName = ConfigurationManager.AppSettings["AzureContainerName"];
+                // 경로 포함하여 blobName 설정
+                string blobName = Path.Combine("uploads", "docs", Path.GetFileName(pdfDoc.FileName)).Replace("\\", "/");
+
+                // Blob 서비스 클라이언트 생성
+                BlobServiceClient blobServiceClient = new BlobServiceClient(connectionString);
+                BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+                // 컨테이너가 없으면 생성
+                await containerClient.CreateIfNotExistsAsync();
+
+                // Blob 클라이언트 생성
+                BlobClient blobClient = containerClient.GetBlobClient(blobName);
+
+                // 비동기적으로 파일 업로드
+                using (var stream = pdfDoc.InputStream)
                 {
-                    Directory.CreateDirectory(docDirectoryPath);
-                }
-
-                string pdfDocPath = Path.Combine(docDirectoryPath, pdfDocName);
-                //System.Diagnostics.Debug.WriteLine("파일 저장 경로: " + pdfDocPath);
-
-                // 비동기적으로 파일 저장
-                using (var fileStream = new FileStream(pdfDocPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
-                {
-                    await pdfDoc.InputStream.CopyToAsync(fileStream);
+                    await blobClient.UploadAsync(stream, overwrite: true);
                 }
 
                 return new PdfDocSaveResult
                 {
                     IsSuccess = true,
-                    PdfDocName = pdfDocName,
+                    PdfDocName = blobName
                 };
             }
             catch (Exception ex)
@@ -72,16 +103,21 @@ namespace AspNetBackend.Models.Services
                 // 타임아웃 설정 (예: 100초)
                 client.Timeout = TimeSpan.FromSeconds(100);
 
-                var fastApiUrl = "http://localhost:8000/api/summary-pdf";
-                // 이미지 경로 구성
-                string basePath = HttpContext.Current.Server.MapPath("~/uploads/docs");
-                string pdfDocPath = Path.Combine(basePath, pdfDocName);
+                // pdf 경로 구성
+                // 로컬 환경
+                //string basePath = HttpContext.Current.Server.MapPath("~/uploads/docs");
+                //string pdfDocPath = Path.Combine(basePath, pdfDocName);
                 //System.Diagnostics.Debug.WriteLine("저장된 pdf 파일 경로: " + pdfDocPath);
+
+                var fastApiUrl = "http://127.0.0.1:8000/api/summary-pdf";
+                
+                // 클라우드
+                // var fastApiUrl = "/api/summary-pdf";
 
                 // 요청을 위한 익명 클래스
                 var requestData = new
                 {
-                    PdfDocPath = pdfDocPath,
+                    PdfDocPath = pdfDocName,
                     PublicKeyPem = publicKeyPem,
                 };
 

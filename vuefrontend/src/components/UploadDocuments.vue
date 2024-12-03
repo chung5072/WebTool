@@ -1,5 +1,5 @@
 <script setup>
-		import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+		// import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 		import { ref, reactive, onMounted } from 'vue';
 		import axios from 'axios';
 		import forge from 'node-forge'; // 공개키, 비밀키 암호화
@@ -38,8 +38,12 @@
 
 		// FastAPI에서 반환한 파일 경로를 사용
 		function fetchAnalysisResult(filePath, decryptionKey, encryptionInitialState, authTag) {
-				// 분석 결과가 저장된 정적 파일을 요청
-				axios.get(`http://localhost:8000/static/${filePath}`)
+			// 분석 결과가 저장된 정적 파일을 요청
+			// 로컬 환경
+			//const localStaticUrl = `http://localhost:8000/static/${filePath}`;
+			// 클라우드
+			const blobUrl = `${import.meta.env.BLOB_API_URL}/${filePath}`;
+      axios.get(blobUrl, { responseType: 'arraybuffer' })
 					.then(res => {
 							//console.log("static 파일 연 초기 res: ", res);
 							// Base64로 인코딩된 데이터를 디코딩 (JavaScript 내장 함수 사용)
@@ -85,15 +89,15 @@
 
 		function goToAnalysisPage() {
 				const formData = new FormData();
-				// 암호화할 공개키 
+				// 암호화할 공개키
 				formData.append('publicKeyPem', publicKeyPem.value);
 				// pdf 문서
 				formData.append('pdfDoc', documentModel.pdfDoc.file);
 
 				axios.post('https://localhost:44363/api/document/upload-pdf-doc', formData, {
-						headers: {
-								'Content-Type': 'multipart/form-data',
-						},
+					headers: {
+							'Content-Type': 'multipart/form-data',
+					},
 				})
 					.then((response) => {
 								//console.log("업로드 요청: ", response)
