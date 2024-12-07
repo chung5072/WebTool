@@ -42,19 +42,22 @@
 			// 로컬 환경
 			//const localStaticUrl = `http://localhost:8000/static/${filePath}`;
 			// 클라우드
-			const blobUrl = `${import.meta.env.BLOB_API_URL}/${filePath}`;
+			const blobUrl = `${import.meta.env.VITE_BLOB_API_URL}/${filePath}`;
+      // console.log("요청 url: ", blobUrl);
       axios.get(blobUrl, { responseType: 'arraybuffer' })
 					.then(res => {
-							//console.log("static 파일 연 초기 res: ", res);
+							// console.log("static 파일 연 초기 res: ", res);
 							// Base64로 인코딩된 데이터를 디코딩 (JavaScript 내장 함수 사용)
 							const encodedData = atob(res.data);
+              // console.log("인코딩된 데이터 ", encodedData);
 							const encodedDecryptionKey = atob(decryptionKey);
 							const encodedInitialState = atob(encryptionInitialState);
 							const encodedTag = atob(authTag);
 
 							// Uint8Array로 변환
 							const decodedDataArray = new Uint8Array(encodedData.split('').map(char => char.charCodeAt(0)));
-							const decodedDecryptionKeyArray = new Uint8Array(encodedDecryptionKey.split('').map(char => char.charCodeAt(0)));
+							// console.log("디코딩된 데이터 ", decodedDataArray);
+              const decodedDecryptionKeyArray = new Uint8Array(encodedDecryptionKey.split('').map(char => char.charCodeAt(0)));
 							const decodedInitialStateArray = new Uint8Array(encodedInitialState.split('').map(char => char.charCodeAt(0)));
 							const decodedTagArray = new Uint8Array(encodedTag.split('').map(char => char.charCodeAt(0)));
 

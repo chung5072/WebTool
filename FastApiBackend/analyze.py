@@ -50,6 +50,7 @@ def summary_pdf(pdf_bytes: bytes):
 
     # 요약본 통합
     final_summary = " ".join(summaries)
+    # print("요약된 결과물", final_summary)
 
     # 최종 요약 결과 출력
     return final_summary

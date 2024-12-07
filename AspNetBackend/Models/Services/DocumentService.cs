@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Azure.Storage.Blobs;
 using System.Configuration;
+using AspNetBackend.Models.Utilities;
 
 namespace AspNetBackend.Models.Services
 {
@@ -52,6 +53,17 @@ namespace AspNetBackend.Models.Services
                 //    PdfDocName = pdfDocName,
                 //};
 
+                // 1. 파일 해시 생성 (HashUtility 사용)
+                string fileHash = HashUtility.GenerateFileHash(pdfDoc);
+
+                // 2. 캐시 확인 (MemoryCacheHelper 사용)
+                var cachedResult = MemoryCacheHelper.GetFromCache(fileHash);
+                if (cachedResult != null)
+                {
+                    return new PdfDocSaveResult { IsSuccess = true, PdfDocName = cachedResult.ToString() };
+                }
+
+                // 3. 저장소에 파일 저장
                 // 클라우드 저장소
                 string connectionString = ConfigurationManager.AppSettings["AzureConnectionString"];
                 string containerName = ConfigurationManager.AppSettings["AzureContainerName"];
@@ -73,6 +85,9 @@ namespace AspNetBackend.Models.Services
                 {
                     await blobClient.UploadAsync(stream, overwrite: true);
                 }
+
+                // 4. 캐시에 저장 (MemoryCacheHelper 사용)
+                MemoryCacheHelper.AddToCache(fileHash, blobName);
 
                 return new PdfDocSaveResult
                 {
