@@ -4,7 +4,7 @@
     {
         public bool IsSuccess { get; set; }
         public string ErrorMessage { get; set; }
-        // 업로드한 파일 이름
-        public string PdfDocName { get; set; }
+        // 업로드한 파일 경로
+        public string PdfDocPath { get; set; }
     }
 }

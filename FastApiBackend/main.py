@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
+# from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 # 데이터를 받기 위해 모델 생성
@@ -11,7 +11,7 @@ from pydantic import BaseModel
 # 파일 관리
 import os
 # 파일 이름 랜덤 생성
-import uuid
+# import uuid
 # 파일 분석 - 요약
 from analyze import summary_pdf
 # 파일 암호화
@@ -40,7 +40,8 @@ class PdfDocument(BaseModel):
 # .Net MVC 5 <- FastAPI
 # 분석 결과가 저장된 문서
 class SummarizedDocument(BaseModel):
-    ResultDocName: str
+    # ResultDocName: str
+    ResultSummarizedContent: str
     DecryptionKey: str
     EncryptionInitialState: str
     AuthTag: str
@@ -83,7 +84,7 @@ async def summary(pdf_doc: PdfDocument):
     # 사용 예시
     # print("저장된 pdf 파일 위치: ", pdf_doc.PdfDocPath)
 
-     # Azure Blob Storage에서 파일 다운로드
+    # Azure Blob Storage에서 파일 다운로드
     blob_client = blob_service_client.get_blob_client(container=container_name, blob=pdf_doc.PdfDocPath)
     download_stream = blob_client.download_blob()
     pdf_content = download_stream.readall()
@@ -102,7 +103,7 @@ async def summary(pdf_doc: PdfDocument):
     # print("인코딩된 대칭키", encoded_encrypted_key)
 
     # 랜덤 파일 이름 생성
-    file_name = f"{uuid.uuid4()}.txt"
+    # file_name = f"{uuid.uuid4()}.txt"
 
     # 로컬 저장소
     # 현재 디렉토리 기준으로 절대 경로 생성
@@ -119,11 +120,11 @@ async def summary(pdf_doc: PdfDocument):
 
     # 클라우드 저장소
     # 결과를 Azure Blob Storage에 업로드
-    result_blob_client = blob_service_client.get_blob_client(container=container_name, blob=f"results/{file_name}")
-    result_blob_client.upload_blob(encoded_summarized_text)
+    # result_blob_client = blob_service_client.get_blob_client(container=container_name, blob=f"results/{file_name}")
+    # result_blob_client.upload_blob(encoded_summarized_text)
 
     return SummarizedDocument(
-        ResultDocName = file_name,
+        ResultSummarizedContent = encoded_summarized_text,
         DecryptionKey = encoded_key,
         EncryptionInitialState = encoded_initial_state,
         AuthTag = encoded_tag

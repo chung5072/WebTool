@@ -1,4 +1,6 @@
-﻿using AspNetBackend.Models.Services;
+﻿using AspNetBackend.Models.Dtos;
+using AspNetBackend.Models.Services;
+using AspNetBackend.Models.Utilities;
 using System;
 using System.Threading.Tasks;
 using System.Web;
@@ -42,7 +44,20 @@ namespace AspNetBackend.Controllers
                     return BadRequest("공개키 혹은 pdf 문서가 존재하지 않음");
                 }
 
-                // 1. PDF 문서 저장 처리
+                // 1. 파일 해싱
+                string fileHash = HashUtility.GenerateFileHash(pdfDoc);
+
+                // 2. 캐시 확인
+                var cachedData = MemoryCacheHelper.GetFromCache<PdfDocSummarizedResult>(fileHash);
+                if (cachedData != null)
+                {
+                    // 2-1. 캐시에 데이터가 있으면
+                    // 요약된 결과 및 대칭키
+                    return Ok(cachedData);
+                }
+
+                // 2-2. 캐시에 데이터가 없으면
+                // 2-2-1. PDF 문서 저장 처리
                 var pdfDocSaveResult = await _documentService.SaveUploadedPdfDocAsync(pdfDoc);
                 if (!pdfDocSaveResult.IsSuccess)
                 {
@@ -50,21 +65,17 @@ namespace AspNetBackend.Controllers
                 }
                 //System.Diagnostics.Debug.WriteLine("저장된 PDF 파일 이름: " + pdfDocSaveResult.PdfDocName);
 
-                // 2. AI를 활용한 분석 처리 
-                var pdfDocAnalysisResult = await _documentService.SummarizePdfDocAsync(publicKeyPem, pdfDocSaveResult.PdfDocName);
+                // 2-2-2. AI를 활용한 분석 처리 
+                var pdfDocAnalysisResult = await _documentService.SummarizePdfDocAsync(publicKeyPem, pdfDocSaveResult.PdfDocPath);
                 if (!pdfDocAnalysisResult.IsSuccess)
                 {
                     return BadRequest("분석 처리 실패");
                 }
 
-                return Ok(new
-                {
-                    PdfDocName = $"{pdfDocSaveResult.PdfDocName}",
-                    pdfDocAnalysisResult.ResultDocName,
-                    pdfDocAnalysisResult.DecryptionKey,
-                    pdfDocAnalysisResult.EncryptionInitialState,
-                    pdfDocAnalysisResult.AuthTag
-                });
+                // 2-2-3. 요약 결과를 캐시에 저장
+                MemoryCacheHelper.AddToCache(fileHash, pdfDocAnalysisResult);
+
+                return Ok(pdfDocAnalysisResult);
             }
             catch (Exception ex)
             {

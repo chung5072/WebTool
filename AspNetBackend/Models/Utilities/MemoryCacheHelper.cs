@@ -10,9 +10,9 @@ namespace AspNetBackend.Models.Utilities
     {
         private static readonly ObjectCache Cache = MemoryCache.Default;
 
-        public static object GetFromCache(string key)
+        public static T GetFromCache<T>(string key) where T : class
         {
-            return Cache.Contains(key) ? Cache[key] : null;
+            return Cache.Contains(key) ? Cache[key] as T : null;
         }
 
         public static void AddToCache(string key, object value, int durationInMinutes = 10)
