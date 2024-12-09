@@ -144,7 +144,7 @@ namespace AspNetBackend.Models.Services
                 }
                 catch (TaskCanceledException ex)
                 {
-                    System.Diagnostics.Debug.WriteLine("요청 시간 에러: " + ex.Message);
+                    System.Diagnostics.Debug.WriteLine("[에러] 요청 시간 에러: " + ex.Message);
                 }
 
                 return new PdfDocSummarizedResult

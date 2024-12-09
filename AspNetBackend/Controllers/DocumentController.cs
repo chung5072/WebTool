@@ -41,7 +41,7 @@ namespace AspNetBackend.Controllers
 
                 if (pdfDoc == null || string.IsNullOrEmpty(publicKeyPem))
                 {
-                    return BadRequest("공개키 혹은 pdf 문서가 존재하지 않음");
+                    return BadRequest("[에러] 공개키 혹은 pdf 문서가 존재하지 않음");
                 }
 
                 // 1. 파일 해싱
@@ -66,20 +66,20 @@ namespace AspNetBackend.Controllers
                 //System.Diagnostics.Debug.WriteLine("저장된 PDF 파일 이름: " + pdfDocSaveResult.PdfDocName);
 
                 // 2-2-2. AI를 활용한 분석 처리 
-                var pdfDocAnalysisResult = await _documentService.SummarizePdfDocAsync(publicKeyPem, pdfDocSaveResult.PdfDocPath);
-                if (!pdfDocAnalysisResult.IsSuccess)
+                var pdfDocSummarizedResult = await _documentService.SummarizePdfDocAsync(publicKeyPem, pdfDocSaveResult.PdfDocPath);
+                if (!pdfDocSummarizedResult.IsSuccess)
                 {
-                    return BadRequest("분석 처리 실패");
+                    return BadRequest("[에러] 분석 처리 실패");
                 }
 
                 // 2-2-3. 요약 결과를 캐시에 저장
-                MemoryCacheHelper.AddToCache(fileHash, pdfDocAnalysisResult);
+                MemoryCacheHelper.AddToCache(fileHash, pdfDocSummarizedResult);
 
-                return Ok(pdfDocAnalysisResult);
+                return Ok(pdfDocSummarizedResult);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("업로드 및 분석 요청 중 예외: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("[에러] 업로드 및 분석 요청: " + ex.Message);
                 return InternalServerError(ex);
             }
         }
