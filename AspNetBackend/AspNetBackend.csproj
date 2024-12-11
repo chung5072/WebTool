@@ -266,7 +266,9 @@
     <Compile Include="Models\Dtos\PdfDocSummarizedResult.cs" />
     <Compile Include="Models\Dtos\PdfDocSaveResult.cs" />
     <Compile Include="Models\Services\DocumentService.cs" />
+    <Compile Include="Models\Services\HttpClientService.cs" />
     <Compile Include="Models\Services\IDocumentService.cs" />
+    <Compile Include="Models\Services\IHttpClientService.cs" />
     <Compile Include="Models\Utilities\HashUtility.cs" />
     <Compile Include="Models\Utilities\MemoryCacheHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

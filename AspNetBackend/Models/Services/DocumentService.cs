@@ -1,7 +1,6 @@
 ﻿using AspNetBackend.Models.Dtos;
 using System;
 using System.IO;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using Azure.Storage.Blobs;
@@ -12,9 +11,13 @@ namespace AspNetBackend.Models.Services
     public class DocumentService : IDocumentService
     {
         private readonly HttpContextBase _context;
-        public DocumentService(HttpContextBase context)
+        // 싱글톤 패턴 - 하나의 HttpClient 인스턴스만 사용
+        private readonly IHttpClientService _httpClient;
+
+        public DocumentService(HttpContextBase context, IHttpClientService httpClient)
         {
             _context = context;
+            _httpClient = httpClient;
         }
 
         /// <summary>
@@ -100,57 +103,43 @@ namespace AspNetBackend.Models.Services
         /// <returns></returns>
         public async Task<PdfDocSummarizedResult> SummarizePdfDocAsync(string publicKeyPem, string pdfDocPath)
         {
-            using (var client = new HttpClient())
+            // using 문
+            // 객체의 리소스를 자동으로 해제
+            // 네트워크 연결, 파일 스트림 등의 리소스를 안전하게 해제하는데 사용
+            // Dispose() : 가비지 컬렉터가 자동으로 수거하지 못하는 리소스들을 수동으로 해제
+            //using (var client = new HttpClient())
+            //{
+            //}
+
+            // pdf 경로 구성
+            // 로컬 서버 
+            //string basePath = HttpContext.Current.Server.MapPath("~/uploads/docs");
+            //string pdfDocPath = Path.Combine(basePath, pdfDocName);
+            //System.Diagnostics.Debug.WriteLine("저장된 pdf 파일 경로: " + pdfDocPath);
+
+            var fastApiUrl = "http://127.0.0.1:8000/api/summary-pdf";
+
+            // 클라우드 서버 
+            // var fastApiUrl = "/api/summary-pdf";
+
+            // 요청을 위한 익명 클래스
+            var requestData = new
             {
-                // 타임아웃 설정 (예: 100초)
-                client.Timeout = TimeSpan.FromSeconds(100);
+                PdfDocPath = pdfDocPath,
+                PublicKeyPem = publicKeyPem,
+            };
 
-                // pdf 경로 구성
-                // 로컬 서버 
-                //string basePath = HttpContext.Current.Server.MapPath("~/uploads/docs");
-                //string pdfDocPath = Path.Combine(basePath, pdfDocName);
-                //System.Diagnostics.Debug.WriteLine("저장된 pdf 파일 경로: " + pdfDocPath);
-
-                var fastApiUrl = "http://127.0.0.1:8000/api/summary-pdf";
-                
-                // 클라우드 서버 
-                // var fastApiUrl = "/api/summary-pdf";
-
-                // 요청을 위한 익명 클래스
-                var requestData = new
-                {
-                    PdfDocPath = pdfDocPath,
-                    PublicKeyPem = publicKeyPem,
-                };
-
-                try
-                {
-                    var response = await client.PostAsJsonAsync(fastApiUrl, requestData);
-                    
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var summarizedDocument = await response.Content.ReadAsAsync<PdfDocSummarizedResult>();
-                        //System.Diagnostics.Debug.WriteLine("요약 내용이 저장된 파일 이름: " + summarizedDocument.ResultDocName);
-
-                        return new PdfDocSummarizedResult
-                        {
-                            IsSuccess = true,
-                            ResultSummarizedContent = summarizedDocument.ResultSummarizedContent,
-                            DecryptionKey = summarizedDocument.DecryptionKey,
-                            EncryptionInitialState = summarizedDocument.EncryptionInitialState,
-                            AuthTag = summarizedDocument.AuthTag,
-                        };
-                    }
-                }
-                catch (TaskCanceledException ex)
-                {
-                    System.Diagnostics.Debug.WriteLine("[에러] 요청 시간 에러: " + ex.Message);
-                }
-
+            try
+            {
+                return await _httpClient.PostAsync<PdfDocSummarizedResult>(fastApiUrl, requestData);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("[에러] " + ex.Message);
                 return new PdfDocSummarizedResult
-                { 
+                {
                     IsSuccess = false,
-                    ResultSummarizedContent = null, 
+                    ResultSummarizedContent = null,
                     DecryptionKey = null,
                     EncryptionInitialState = null,
                     AuthTag = null,
