@@ -3,13 +3,25 @@
   <div>
     <!-- PDF Upload -->
     <div>
-      <input
-        type="file"
-        @change="handleFileUpload($event.target.files)"
-        accept=".pdf"
-      />
+      <div class="mb-3">
+        <label for="formFile" class="form-label">PDF 파일</label>
+        <input
+          id="formFile"
+          class="form-control"
+          type="file"
+          @change="handleFileUpload($event.target.files)"
+          accept=".pdf"
+        />
+      </div>
+
       <div v-if="documentModel.pdfDoc.file">
-        <BButton @click="goToAnalysisPage" variant="success">Analyze</BButton>
+        <button
+          type="button"
+          @click="goToAnalysisPage"
+          class="btn btn-outline-primary"
+        >
+          Analyze
+        </button>
       </div>
     </div>
 
